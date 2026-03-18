@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16PF — Cuestionario Factorial de Personalidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0a0a;
+  --surface:#141414;
+  --surface2:#1e1e1e;
+  --surface3:#2a2a2a;
+  --border:#2e2e2e;
+  --orange:#f97316;
+  --orange-dim:#c45c0e;
+  --orange-glow:rgba(249,115,22,0.15);
+  --gray:#9ca3af;
+  --gray2:#6b7280;
+  --gray3:#374151;
+  --white:#f1f5f9;
+  --text:#e2e8f0;
+  --text-muted:#9ca3af;
+  --radius:8px;
+  --shadow:0 4px 24px rgba(0,0,0,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* LAYOUT */
+.app{max-width:860px;margin:0 auto;padding:0 20px}
+.section{display:none;min-height:100vh;padding:60px 0 80px}
+.section.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER BAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.topbar-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;letter-spacing:2px;color:var(--orange)}
+.topbar-progress{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--gray)}
+.progress-bar{width:180px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--orange);transition:width .4s ease;border-radius:2px}
+
+/* WELCOME */
+.hero{padding-top:80px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--orange-glow);border:1px solid rgba(249,115,22,0.3);color:var(--orange);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(48px,8vw,80px);font-weight:800;line-height:1;margin-bottom:12px;letter-spacing:-1px}
+.hero-title span{color:var(--orange)}
+.hero-sub{font-size:18px;color:var(--gray);max-width:540px;margin:0 auto 48px;line-height:1.6;font-weight:300}
+.hero-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;text-align:left}
+.hero-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color .2s}
+.hero-card:hover{border-color:var(--orange)}
+.hero-card-icon{font-size:24px;margin-bottom:10px}
+.hero-card-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px}
+.hero-card-text{font-size:13px;color:var(--gray);line-height:1.5}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:none;border-radius:var(--radius);cursor:pointer;font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;transition:all .2s;text-decoration:none}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#ea6c0a;transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,0.35)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface3);border-color:var(--gray3)}
+.btn-ghost{background:transparent;color:var(--gray);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--orange);border-color:var(--orange)}
+.btn-lg{padding:16px 40px;font-size:16px}
+.btn-sm{padding:8px 20px;font-size:13px}
+
+/* FORM */
+.form-section{padding-top:80px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;max-width:600px;margin:0 auto}
+.form-title{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;margin-bottom:8px}
+.form-sub{color:var(--gray);font-size:14px;margin-bottom:32px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.form-group label{font-size:13px;font-weight:500;color:var(--text-muted)}
+.form-group input, .form-group select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;transition:border-color .2s;outline:none}
+.form-group input:focus, .form-group select:focus{border-color:var(--orange)}
+.form-group select option{background:var(--surface2)}
+.form-actions{display:flex;justify-content:flex-end;margin-top:24px}
+
+/* INSTRUCTIONS */
+.instructions-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;max-width:680px;margin:0 auto}
+.instr-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;margin-bottom:20px}
+.instr-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.instr-list li{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--gray);line-height:1.6}
+.instr-list li::before{content:'';display:block;min-width:6px;height:6px;background:var(--orange);border-radius:50%;margin-top:7px}
+.instr-example{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:32px}
+.instr-example-title{font-size:12px;font-weight:600;color:var(--orange);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.example-q{font-size:14px;margin-bottom:12px;color:var(--text)}
+.example-opts{display:flex;gap:8px}
+.example-opt{padding:8px 16px;border-radius:6px;font-size:13px;border:1px solid var(--border);color:var(--gray);background:var(--surface)}
+.example-opt.selected{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* QUESTIONS */
+.q-header{padding-top:80px;margin-bottom:40px;display:flex;align-items:center;justify-content:space-between}
+.q-header-left{display:flex;flex-direction:column;gap:4px}
+.q-page-label{font-size:12px;color:var(--gray);font-weight:500;text-transform:uppercase;letter-spacing:1px}
+.q-page-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700}
+.q-counter{font-size:13px;color:var(--gray)}
+.questions-list{display:flex;flex-direction:column;gap:0}
+.question-item{border-bottom:1px solid var(--border);padding:20px 0}
+.question-item:last-child{border-bottom:none}
+.q-number{font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.q-text{font-size:15px;color:var(--text);margin-bottom:14px;line-height:1.5}
+.q-options{display:flex;gap:8px;flex-wrap:wrap}
+.q-opt{padding:9px 20px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--gray);background:transparent;cursor:pointer;transition:all .15s;font-family:'Barlow',sans-serif}
+.q-opt:hover{border-color:var(--orange);color:var(--orange)}
+.q-opt.selected{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:600}
+.q-opt.error-pulse{animation:errPulse .4s ease}
+@keyframes errPulse{0%,100%{border-color:var(--border)}50%{border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,0.2)}}
+.q-nav{display:flex;align-items:center;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.q-nav-info{font-size:13px;color:var(--gray)}
+
+/* PROCESSING */
+.processing-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;gap:24px}
+.spinner{width:56px;height:56px;border:3px solid var(--surface3);border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700}
+.processing-sub{color:var(--gray);font-size:14px}
+
+/* RESULTS */
+.results-header{padding-top:80px;margin-bottom:48px}
+.results-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);color:var(--orange);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+.results-name{font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;margin-bottom:8px}
+.results-meta{font-size:14px;color:var(--gray)}
+.distorsion-banner{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:var(--radius);margin-bottom:32px;font-size:14px;border:1px solid}
+.distorsion-ok{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.25);color:#4ade80}
+.distorsion-warn{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.25);color:#fbbf24}
+.distorsion-bad{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.25);color:#f87171}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.section-title::before{content:'';display:block;width:4px;height:22px;background:var(--orange);border-radius:2px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:48px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+.chart-card-full{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.radar-wrap{max-height:340px;display:flex;align-items:center;justify-content:center}
+.factors-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:48px}
+.factor-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.factor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.factor-name{font-size:12px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px}
+.factor-label{font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px}
+.factor-score{font-size:22px;font-weight:800;font-family:'Barlow Condensed',sans-serif;color:var(--white)}
+.factor-bar{height:6px;background:var(--surface3);border-radius:3px;margin:8px 0;overflow:hidden}
+.factor-bar-fill{height:100%;border-radius:3px;background:var(--orange);transition:width .8s ease}
+.factor-desc{font-size:12px;color:var(--gray);line-height:1.5}
+.second-order-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:48px}
+.so-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.so-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--orange)}
+.so-name{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.so-label{font-size:16px;font-weight:700;margin-bottom:8px}
+.so-score-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.so-score{font-size:32px;font-weight:800;font-family:'Barlow Condensed',sans-serif;color:var(--white)}
+.so-bar{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.so-bar-fill{height:100%;background:var(--orange);border-radius:3px;transition:width .8s ease}
+.so-desc{font-size:12px;color:var(--gray);line-height:1.5}
+.training-section{margin-bottom:48px}
+.training-loading{display:flex;align-items:center;gap:12px;color:var(--gray);font-size:14px;padding:24px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)}
+.training-spinner{width:20px;height:20px;border:2px solid var(--surface3);border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+.training-content{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px}
+.training-content h3{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--orange);margin:20px 0 10px}
+.training-content h3:first-child{margin-top:0}
+.training-content p{font-size:14px;color:var(--gray);line-height:1.7;margin-bottom:12px}
+.training-content ul,.training-content ol{padding-left:20px;margin-bottom:12px}
+.training-content li{font-size:14px;color:var(--gray);line-height:1.7;margin-bottom:4px}
+.training-content strong{color:var(--text);font-weight:600}
+.module-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:12px 0}
+.module-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.module-badge{background:var(--orange-glow);color:var(--orange);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.module-title{font-size:14px;font-weight:600;color:var(--white)}
+.module-details{font-size:12px;color:var(--gray);line-height:1.6}
+.print-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.error-msg{color:#f87171;font-size:12px;margin-top:4px}
+@media(max-width:640px){
+  .hero-cards{grid-template-columns:1fr}
+  .charts-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .factors-grid{grid-template-columns:1fr}
+  .second-order-grid{grid-template-columns:1fr}
+}
+@media print{
+  .topbar,.print-actions,.q-nav,.btn{display:none!important}
+  .section{padding:0!important}
+  body{background:#fff;color:#000}
+  .factor-card,.so-card,.chart-card,.training-content{border:1px solid #ccc;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">16PF</div>
+  <div class="topbar-progress" id="topProgress" style="display:none">
+    <span id="progressLabel">Pregunta 1 de 187</span>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: WELCOME -->
+<div class="section active" id="sec-welcome">
+  <div class="app">
+    <div class="hero">
+      <div class="hero-badge">🧠 Evaluación Psicométrica</div>
+      <h1 class="hero-title">16PF<br><span>Cuestionario Factorial</span><br>de Personalidad</h1>
+      <p class="hero-sub">Descubre tu perfil completo de personalidad a través de 187 preguntas diseñadas para revelar tus fortalezas y oportunidades de desarrollo.</p>
+      <div class="hero-cards">
+        <div class="hero-card"><div class="hero-card-icon">⏱️</div><div class="hero-card-title">~35–45 minutos</div><div class="hero-card-text">Tómate tu tiempo. No hay respuestas correctas ni incorrectas.</div></div>
+        <div class="hero-card"><div class="hero-card-icon">📊</div><div class="hero-card-title">16 factores + 4 globales</div><div class="hero-card-text">Análisis completo de rasgos de primer y segundo orden.</div></div>
+        <div class="hero-card"><div class="hero-card-icon">🎯</div><div class="hero-card-title">Plan formativo</div><div class="hero-card-text">Recibe recomendaciones personalizadas para tu desarrollo.</div></div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="showSection('sec-data')">Comenzar evaluación →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: USER DATA -->
+<div class="section" id="sec-data">
+  <div class="app">
+    <div class="form-section">
+      <div class="form-card">
+        <div class="form-title">Datos personales</div>
+        <div class="form-sub">Esta información es confidencial y solo se utiliza para personalizar tu reporte.</div>
+        <div class="form-group"><label>Nombre completo *</label><input type="text" id="inp-nombre" placeholder="Ej: María González"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Edad *</label><input type="number" id="inp-edad" min="18" max="70" placeholder="Ej: 30"></div>
+          <div class="form-group"><label>Sexo *</label>
+            <select id="inp-sexo"><option value="">Seleccionar…</option><option value="M">Masculino</option><option value="F">Femenino</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Estado civil</label>
+            <select id="inp-civil"><option value="NS">Prefiero no decir</option><option value="S">Soltero/a</option><option value="C">Casado/a</option><option value="D">Divorciado/a</option><option value="V">Viudo/a</option><option value="U">Unión libre</option></select>
+          </div>
+          <div class="form-group"><label>Fecha</label><input type="date" id="inp-fecha"></div>
+        </div>
+        <div id="data-error" class="error-msg" style="display:none">Por favor completa los campos requeridos.</div>
+        <div class="form-actions">
+          <button class="btn btn-secondary btn-sm" onclick="showSection('sec-welcome')" style="margin-right:8px">← Volver</button>
+          <button class="btn btn-primary" onclick="validateDataAndNext()">Continuar →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: INSTRUCTIONS -->
+<div class="section" id="sec-instructions">
+  <div class="app">
+    <div class="form-section">
+      <div class="instructions-card">
+        <div class="instr-title">Instrucciones</div>
+        <ul class="instr-list">
+          <li>Este cuestionario contiene 187 preguntas de opción múltiple con tres alternativas: <strong>A</strong>, <strong>B</strong> y <strong>C</strong>.</li>
+          <li>Responde con sinceridad. No existen respuestas buenas ni malas.</li>
+          <li>Elige la opción que <strong>mejor describe cómo eres habitualmente</strong>, no cómo crees que deberías ser.</li>
+          <li>La opción <strong>B (¿?)</strong> es la respuesta de duda. Úsala lo menos posible, solo cuando realmente no puedas decidir.</li>
+          <li>No dejes preguntas sin responder. Responde todas aunque no estés completamente seguro/a.</li>
+          <li>El cuestionario tarda entre 35 y 45 minutos. Intenta completarlo en una sola sesión.</li>
+        </ul>
+        <div class="instr-example">
+          <div class="instr-example-title">Ejemplo</div>
+          <div class="example-q">Me gusta más estar con gente que estar solo/a:</div>
+          <div class="example-opts">
+            <div class="example-opt selected">A. Verdadero</div>
+            <div class="example-opt">B. ¿?</div>
+            <div class="example-opt">C. Falso</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="showSection('sec-data')">← Volver</button>
+          <button class="btn btn-primary" onclick="startTest()">Comenzar el test →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: QUESTIONS -->
+<div class="section" id="sec-questions">
+  <div class="app">
+    <div class="q-header">
+      <div class="q-header-left">
+        <div class="q-page-label" id="qPageLabel">Página 1 de 19</div>
+        <div class="q-page-title" id="qPageTitle">Preguntas 1 – 10</div>
+      </div>
+      <div class="q-counter" id="qCounter">0 / 187 respondidas</div>
+    </div>
+    <div class="questions-list" id="questionsList"></div>
+    <div id="q-error" class="error-msg" style="display:none;margin-bottom:16px">⚠️ Por favor responde todas las preguntas de esta página antes de continuar.</div>
+    <div class="q-nav">
+      <button class="btn btn-ghost btn-sm" id="btnPrev" onclick="changePage(-1)">← Anterior</button>
+      <div class="q-nav-info"><span id="qNavInfo"></span></div>
+      <button class="btn btn-primary btn-sm" id="btnNext" onclick="changePage(1)">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: PROCESSING -->
+<div class="section" id="sec-processing">
+  <div class="app">
+    <div class="processing-center">
+      <div class="spinner"></div>
+      <div class="processing-title" id="procTitle">Calculando tu perfil...</div>
+      <div class="processing-sub" id="procSub">Convirtiendo puntajes a decatipos normativos</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: RESULTS -->
+<div class="section" id="sec-results">
+  <div class="app">
+    <div class="results-header">
+      <div class="results-badge">📋 Informe 16PF — Forma A</div>
+      <div class="results-name" id="resName">Perfil de Personalidad</div>
+      <div class="results-meta" id="resMeta"></div>
+    </div>
+
+    <div id="distorsionBanner" class="distorsion-banner distorsion-ok"></div>
+
+    <div class="print-actions">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Descargar / Imprimir PDF</button>
+      <button class="btn btn-secondary" onclick="location.reload()">Nueva evaluación</button>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="section-title">Perfil de factores</div>
+    <div class="charts-grid">
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Gráfica de Perfil — 16 Factores (Decatipos)</div>
+        <div style="height:320px"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Mapa de Personalidad (Radar)</div>
+        <div class="radar-wrap" style="height:300px"><canvas id="radarChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Factores de Segundo Orden</div>
+        <div style="height:300px"><canvas id="soChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- FACTOR CARDS -->
+    <div class="section-title">Factores de Primer Orden</div>
+    <div class="factors-grid" id="factorCards"></div>
+
+    <!-- SECOND ORDER -->
+    <div class="section-title">Factores de Segundo Orden</div>
+    <div class="second-order-grid" id="soCards"></div>
+
+    <!-- TRAINING PLAN -->
+    <div class="section-title">Plan de Formación Personalizado</div>
+    <div class="training-section">
+      <div class="training-loading" id="trainingLoading">
+        <div class="training-spinner"></div>
+        <span>Generando plan de formación con IA... esto puede tomar unos segundos.</span>
+      </div>
+      <div class="training-content" id="trainingContent" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA: 187 QUESTIONS (16PF Form A - Spanish)
+// ============================================================
+const QUESTIONS = [
+  // Block 1-10
+  {n:1, t:"Entiendo perfectamente todas las instrucciones que me han dado.", opts:["a","b","c"]},
+  {n:2, t:"Me alegro de poder participar en esta evaluación de forma sincera.", opts:["a","b","c"]},
+  {n:3, t:"Prefiero relacionarme con pocas personas pero de forma cercana.", opts:["a","b","c"]},
+  {n:4, t:"Tengo suficiente energía para enfrentar los problemas que se me presentan.", opts:["a","b","c"]},
+  {n:5, t:"En una reunión, prefiero observar y escuchar antes de hablar.", opts:["a","b","c"]},
+  {n:6, t:"Me parece que la gente me acepta tal como soy.", opts:["a","b","c"]},
+  {n:7, t:"Cuando alguien me critica injustamente, por lo general callo y no respondo.", opts:["a","b","c"]},
+  {n:8, t:"Me gusta seguir los procedimientos establecidos antes de intentar nuevas formas de hacer las cosas.", opts:["a","b","c"]},
+  {n:9, t:"Creo que es más sensato planear con cuidado antes de empezar cualquier tarea.", opts:["a","b","c"]},
+  {n:10, t:"Preferiría ser escritor/a de teatro a gerente de empresas.", opts:["a","b","c"]},
+  // Block 11-20
+  {n:11, t:"Tolero a las personas que parecen presumidas.", opts:["a","b","c"]},
+  {n:12, t:"Considero que hay pocas cosas que me den miedo.", opts:["a","b","c"]},
+  {n:13, t:"Estoy dispuesto/a a aceptar trabajos con riesgo si la recompensa puede ser grande.", opts:["a","b","c"]},
+  {n:14, t:"Me cuesta trabajo seguir las instrucciones de otros cuando no estoy de acuerdo.", opts:["a","b","c"]},
+  {n:15, t:"Con frecuencia me siento rígido/a e incapaz de adaptarme a diferentes situaciones.", opts:["a","b","c"]},
+  {n:16, t:"Creo que casi todo puede comprarse con dinero.", opts:["a","b","c"]},
+  {n:17, t:"Me resulta molesto que la gente me diga cómo debo vivir aunque sea con buenas intenciones.", opts:["a","b","c"]},
+  {n:18, t:"Cuando mi jefe me da órdenes, siento que las cumplo de buen grado.", opts:["a","b","c"]},
+  {n:19, t:"Cuando alguien me molesta me enojo fácilmente y se lo digo.", opts:["a","b","c"]},
+  {n:20, t:"Prefiero obtener las noticias y la información leyendo por mi cuenta que a través de conversaciones.", opts:["a","b","c"]},
+  // Block 21-30
+  {n:21, t:"Me gusta conocer a muchas personas nuevas.", opts:["a","b","c"]},
+  {n:22, t:"Cansado es a trabajar como Orgulloso es a...", opts:["Lograr", "¿?", "Sufrir"]},
+  {n:23, t:"Cuando hago las cosas, prefiero trabajar con cuidado aunque sea más lento.", opts:["a","b","c"]},
+  {n:24, t:"Me siento incómodo/a cuando las cosas no están ordenadas o en su lugar.", opts:["a","b","c"]},
+  {n:25, t:"La gente me considera un/a buen/a conversador/a y una persona agradable.", opts:["a","b","c"]},
+  {n:26, t:"Creo que casi nadie haría algo por mí si no obtuviera algo a cambio.", opts:["a","b","c"]},
+  {n:27, t:"Me disgusta ver a personas desaseadas o descuidadas en su apariencia.", opts:["a","b","c"]},
+  {n:28, t:"Me resulta difícil hablar en público o expresarme ante grupos grandes.", opts:["a","b","c"]},
+  {n:29, t:"Me gusta la música suave y tranquila más que la música ruidosa o agitada.", opts:["a","b","c"]},
+  {n:30, t:"Disfruto estando en el centro de atención en reuniones sociales.", opts:["a","b","c"]},
+  // Block 31-40
+  {n:31, t:"Me sentiría cómodo/a con una vida más tranquila aunque esto significara menos vacaciones largas.", opts:["a","b","c"]},
+  {n:32, t:"Hablo de mis sentimientos solo cuando es absolutamente necesario.", opts:["a","b","c"]},
+  {n:33, t:"Cuando juego o compito, me molesta más perder que a la mayoría de las personas.", opts:["a","b","c"]},
+  {n:34, t:"Preferiría ser médico/a antes que maestro/a.", opts:["a","b","c"]},
+  {n:35, t:"Con frecuencia siento que necesito hacer algo de actividad física.", opts:["a","b","c"]},
+  {n:36, t:"Me resulta fácil olvidarme del trabajo cuando no estoy en la oficina.", opts:["a","b","c"]},
+  {n:37, t:"Cuando tengo que hablar en público, prefiero planear lo que voy a decir con mucha anticipación.", opts:["a","b","c"]},
+  {n:38, t:"Cuando estoy bajo presión, me pongo tenso/a e irritable con facilidad.", opts:["a","b","c"]},
+  {n:39, t:"Con frecuencia soy elegido/a para representar a los demás en actividades o proyectos.", opts:["a","b","c"]},
+  {n:40, t:"¿Cuál de los siguientes da luz por sí mismo? (a) Vela, (b) Luna, (c) Luz eléctrica", opts:["Vela","¿?","Luna"]},
+  // Block 41-50
+  {n:41, t:"Las personas que me conocen piensan que soy una persona muy activa y enérgica.", opts:["a","b","c"]},
+  {n:42, t:"Con frecuencia tengo pensamientos que me impiden dormir bien por las noches.", opts:["a","b","c"]},
+  {n:43, t:"Me gusta organizar y planear mis actividades con mucho tiempo de anticipación.", opts:["a","b","c"]},
+  {n:44, t:"Creo que la mayoría de las personas son honestas y buscan hacer el bien.", opts:["a","b","c"]},
+  {n:45, t:"Cuando alguien me pide que cambie de opinión, rara vez lo hago si creo que tengo razón.", opts:["a","b","c"]},
+  {n:46, t:"Siento que tengo más éxito cuando trabajo con métodos probados que con ideas nuevas.", opts:["a","b","c"]},
+  {n:47, t:"Me considero una persona bastante convencional y tradicional.", opts:["a","b","c"]},
+  {n:48, t:"Me gusta hacer muchas actividades diferentes y variadas durante la semana.", opts:["a","b","c"]},
+  {n:49, t:"Cuando estoy en una conversación, prefiero escuchar más que hablar.", opts:["a","b","c"]},
+  {n:50, t:"Me interesa más explorar ideas abstractas que resolver problemas prácticos.", opts:["a","b","c"]},
+  // Block 51-60
+  {n:51, t:"Rara vez me preocupo por lo que otros piensan de mí.", opts:["a","b","c"]},
+  {n:52, t:"Cuando cometo un error, me lo reprocho por mucho tiempo.", opts:["a","b","c"]},
+  {n:53, t:"Me siento más cómodo/a cuando tengo una rutina establecida.", opts:["a","b","c"]},
+  {n:54, t:"Me gustaría que el mundo tuviera menos reglas y restricciones.", opts:["a","b","c"]},
+  {n:55, t:"Me gusta liderar grupos y tomar la iniciativa en situaciones sociales.", opts:["a","b","c"]},
+  {n:56, t:"Con frecuencia siento que la gente me critica o habla mal de mí.", opts:["a","b","c"]},
+  {n:57, t:"Prefiero un trabajo que me ofrezca seguridad aunque gane menos.", opts:["a","b","c"]},
+  {n:58, t:"Disfruto hacer actividades al aire libre como caminatas o deportes.", opts:["a","b","c"]},
+  {n:59, t:"¿Cuál de los siguientes conjuntos de fracciones son iguales? a) 3/9 y 1/3, b) 1/3 y 3/6, c) 3/9 y 2/6", opts:["3/9=1/3","¿?","3/9=2/6"]},
+  {n:60, t:"Cuando algo sale mal, tiendo a encontrar explicaciones lógicas más que culpar a otros.", opts:["a","b","c"]},
+  // Block 61-70
+  {n:61, t:"Me resulta difícil decir no cuando alguien me pide un favor.", opts:["a","b","c"]},
+  {n:62, t:"Suelo mantener mis emociones bajo control en situaciones difíciles.", opts:["a","b","c"]},
+  {n:63, t:"Prefiero trabajar solo/a que en equipo.", opts:["a","b","c"]},
+  {n:64, t:"Me gusta participar en actividades competitivas.", opts:["a","b","c"]},
+  {n:65, t:"La gente me describe como una persona agradable pero algo descuidada.", opts:["a","b","c"]},
+  {n:66, t:"Con frecuencia siento que las cosas no van a salir bien.", opts:["a","b","c"]},
+  {n:67, t:"Cuando viajo, me gusta explorar lugares desconocidos aunque esto implique cierto riesgo.", opts:["a","b","c"]},
+  {n:68, t:"Cuando leo un artículo que presenta un solo punto de vista, prefiero olvidarlo que discutirlo.", opts:["a","b","c"]},
+  {n:69, t:"Siento con frecuencia que tengo más energía que la mayoría de las personas.", opts:["a","b","c"]},
+  {n:70, t:"Me molesta cuando las cosas no se hacen de la manera correcta.", opts:["a","b","c"]},
+  // Block 71-80
+  {n:71, t:"Tengo muchos amigos y conocidos.", opts:["a","b","c"]},
+  {n:72, t:"Cuando alguien me cuenta sus planes, a veces pienso que tienen motivos ocultos.", opts:["a","b","c"]},
+  {n:73, t:"Prefiero una vida tranquila a mi manera que ser muy admirado/a pero vivir con mucha presión.", opts:["a","b","c"]},
+  {n:74, t:"Para enterarme de lo que pasa en el mundo, prefiero leer que preguntar a otros.", opts:["a","b","c"]},
+  {n:75, t:"Cuando cometo errores, siento que me cuesta trabajo perdonarme.", opts:["a","b","c"]},
+  {n:76, t:"Me siento cómodo/a tomando decisiones rápidas sin pensarlas demasiado.", opts:["a","b","c"]},
+  {n:77, t:"Me pongo nervioso/a con facilidad en situaciones de examen o evaluación.", opts:["a","b","c"]},
+  {n:78, t:"Si AB se convierte en dc, ¿en qué se convierte SR?", opts:["qp","¿?","ts"]},
+  {n:79, t:"Cuando tengo mucho trabajo, me organizo bien y no me descontrolo.", opts:["a","b","c"]},
+  {n:80, t:"Hay personas en las que confío y que nunca me han fallado.", opts:["a","b","c"]},
+  // Block 81-90
+  {n:81, t:"Me siento con frecuencia lleno/a de vida y entusiasmo.", opts:["a","b","c"]},
+  {n:82, t:"Cuando alguien me da una instrucción que no tiene sentido, lo señalo de inmediato.", opts:["a","b","c"]},
+  {n:83, t:"Cuando me enfrento a un problema nuevo, confío en que lo podré resolver sobre la marcha.", opts:["a","b","c"]},
+  {n:84, t:"Me resulta fácil olvidar las ofensas que me hacen otras personas.", opts:["a","b","c"]},
+  {n:85, t:"Antes de hablar de un tema, me gusta conocer muy bien los hechos.", opts:["a","b","c"]},
+  {n:86, t:"Me atraen más las obras de arte y la música que los deportes o la mecánica.", opts:["a","b","c"]},
+  {n:87, t:"Con frecuencia siento que las reglas son demasiado rígidas e innecesarias.", opts:["a","b","c"]},
+  {n:88, t:"Con frecuencia olvido cosas triviales como dónde dejé mis llaves o mis objetos personales.", opts:["a","b","c"]},
+  {n:89, t:"Cuando tengo que elegir entre dos opciones difíciles, me cuesta mucho decidirme.", opts:["a","b","c"]},
+  {n:90, t:"Puedo hablar fácilmente con personas que acabo de conocer.", opts:["a","b","c"]},
+  // Block 91-100
+  {n:91, t:"Me preocupo poco por lo que le pueda pasar mañana.", opts:["a","b","c"]},
+  {n:92, t:"En mi trabajo o estudios, soy muy cuidadoso/a con los detalles.", opts:["a","b","c"]},
+  {n:93, t:"Prefiero ser más independiente que buscar el apoyo o la aprobación de los demás.", opts:["a","b","c"]},
+  {n:94, t:"Soy de las personas que raramente llegan tarde.", opts:["a","b","c"]},
+  {n:95, t:"Por lo general controlo mis emociones y no muestro lo que siento.", opts:["a","b","c"]},
+  {n:96, t:"Siento que tengo buenas razones para tener miedo de algunas cosas.", opts:["a","b","c"]},
+  {n:97, t:"¿Qué viene a continuación? XOOOOXXOOOXXX...", opts:["OXXX","¿?","OOXX"]},
+  {n:98, t:"Cuando me enojo, me cuesta trabajo calmarlo rápidamente.", opts:["a","b","c"]},
+  {n:99, t:"Cuando termino un proyecto, me gusta repasar los detalles para asegurarme de que esté perfecto.", opts:["a","b","c"]},
+  {n:100, t:"Encuentro fascinante explorar ideas filosóficas o metafísicas.", opts:["a","b","c"]},
+  // Block 101-110
+  {n:101, t:"Disfruto de las reuniones sociales y me siento bien en ellas.", opts:["a","b","c"]},
+  {n:102, t:"Me molesta encontrar una habitación desordenada.", opts:["a","b","c"]},
+  {n:103, t:"Me gusta salir con amigos frecuentemente.", opts:["a","b","c"]},
+  {n:104, t:"Cuando tengo que actuar, prefiero hacerlo solo/a que con la ayuda de otros.", opts:["a","b","c"]},
+  {n:105, t:"Preferiría ser asistente social o consejero/a antes que ingeniero/a.", opts:["a","b","c"]},
+  {n:106, t:"Creo que soy una persona completamente honesta en todos mis asuntos.", opts:["a","b","c"]},
+  {n:107, t:"Cuando me critican, me afecta aunque intente que no se note.", opts:["a","b","c"]},
+  {n:108, t:"Como con gusto pero con menos elegancia que la mayoría de las personas.", opts:["a","b","c"]},
+  {n:109, t:"Me gustan las ideas novedosas aunque aún no estén probadas.", opts:["a","b","c"]},
+  {n:110, t:"Preferiría un trabajo que pague más aunque tenga que demostrar que soy mejor que otros.", opts:["a","b","c"]},
+  // Block 111-120
+  {n:111, t:"Me molesta que la gente piense que soy extraño/a o diferente.", opts:["a","b","c"]},
+  {n:112, t:"Me entusiasma comenzar proyectos aunque rara vez los llevo hasta el final.", opts:["a","b","c"]},
+  {n:113, t:"Las pequeñas irritaciones y molestias cotidianas me sacan fácilmente del equilibrio.", opts:["a","b","c"]},
+  {n:114, t:"Por lo general duermo bien y no me despierto en la noche.", opts:["a","b","c"]},
+  {n:115, t:"En una discusión, suelo escuchar la posición del otro aunque no esté de acuerdo.", opts:["a","b","c"]},
+  {n:116, t:"Azada es a cavar como cuchillo es a...", opts:["Cortar","¿?","Afilar"]},
+  {n:117, t:"Rara vez me siento solo/a o aburrido/a.", opts:["a","b","c"]},
+  {n:118, t:"Me gusta ir de fiesta y pasar un buen rato con amigos.", opts:["a","b","c"]},
+  {n:119, t:"Cuando alguien comete un error, me resulta fácil señalárselo directamente.", opts:["a","b","c"]},
+  {n:120, t:"Hay pocas personas con las que realmente me sienta cercano/a.", opts:["a","b","c"]},
+  // Block 121-130
+  {n:121, t:"Rara vez acepto los consejos o sugerencias que me dan los demás.", opts:["a","b","c"]},
+  {n:122, t:"Me resulta difícil permanecer quieto/a durante mucho tiempo.", opts:["a","b","c"]},
+  {n:123, t:"Cuando alguien me hace una pregunta comprometedora, por lo general la respondo con otra pregunta.", opts:["a","b","c"]},
+  {n:124, t:"Cuando tengo un problema, prefiero resolverlo yo solo/a antes que pedir ayuda.", opts:["a","b","c"]},
+  {n:125, t:"Con frecuencia siento que las cosas que hago son mejores de lo necesario.", opts:["a","b","c"]},
+  {n:126, t:"Cuando viajo en tren o avión durante mucho tiempo, prefiero leer algo profundo a platicar.", opts:["a","b","c"]},
+  {n:127, t:"Me resulta difícil ser duro/a o estricto/a con las personas aunque sea necesario.", opts:["a","b","c"]},
+  {n:128, t:"Con frecuencia me siento nervioso/a o aprensivo/a sin razón aparente.", opts:["a","b","c"]},
+  {n:129, t:"Me gusta hacer las cosas bien aunque eso me tome más tiempo.", opts:["a","b","c"]},
+  {n:130, t:"Prefiero pasar el tiempo libre solo/a o con pocas personas cercanas.", opts:["a","b","c"]},
+  // Block 131-140
+  {n:131, t:"Cuando cometo errores, tiendo a exagerarlos en mi mente.", opts:["a","b","c"]},
+  {n:132, t:"Me gustan los trabajos que requieren mucha precisión y atención al detalle.", opts:["a","b","c"]},
+  {n:133, t:"Me resulta difícil cambiar viejos hábitos aunque me proponga hacerlo.", opts:["a","b","c"]},
+  {n:134, t:"Me gusta conocer con anticipación los detalles de lo que se va a hacer.", opts:["a","b","c"]},
+  {n:135, t:"Llama es a calor como rosa es a...", opts:["Belleza","¿?","Aroma"]},
+  {n:136, t:"Con frecuencia pierdo el entusiasmo cuando estoy a punto de disfrutar algo que esperaba.", opts:["a","b","c"]},
+  {n:137, t:"Soy bueno/a para motivar a otros a alcanzar sus metas.", opts:["a","b","c"]},
+  {n:138, t:"Me siento más cómodo/a en grupos pequeños que en grupos grandes.", opts:["a","b","c"]},
+  {n:139, t:"Prefiero las tareas tranquilas y solitarias a las reuniones animadas y participativas.", opts:["a","b","c"]},
+  {n:140, t:"Creo que la gente en general actúa por interés propio.", opts:["a","b","c"]},
+  // Block 141-150
+  {n:141, t:"Cuando estoy emocionado/a, lo muestro abiertamente sin reservas.", opts:["a","b","c"]},
+  {n:142, t:"Suelo terminar los proyectos que empiezo aunque me lleve tiempo.", opts:["a","b","c"]},
+  {n:143, t:"Disfruto con actividades que implican un cierto elemento de aventura.", opts:["a","b","c"]},
+  {n:144, t:"Me resulta más fácil expresar mis pensamientos por escrito que hablando.", opts:["a","b","c"]},
+  {n:145, t:"Cuando tengo que esperar en una reunión, suelo mantenerme quieto/a sin necesidad de hacer nada.", opts:["a","b","c"]},
+  {n:146, t:"A veces siento que alguien me quiere perjudicar sin razón aparente.", opts:["a","b","c"]},
+  {n:147, t:"Cuando tengo que hacer algo nuevo, me preparo con mucha anticipación.", opts:["a","b","c"]},
+  {n:148, t:"En general disfruto de la vida sin preocuparme demasiado.", opts:["a","b","c"]},
+  {n:149, t:"Cuando planeo una actividad, prefiero organizarla solo/a.", opts:["a","b","c"]},
+  {n:150, t:"Prefiero las soluciones simples y probadas a las ideas nuevas y complicadas.", opts:["a","b","c"]},
+  // Block 151-160
+  {n:151, t:"A veces me pone nervioso/a la idea de afrontar tareas que tengo pendientes.", opts:["a","b","c"]},
+  {n:152, t:"Me gusta mucho leer libros o artículos sobre temas filosóficos o abstractos.", opts:["a","b","c"]},
+  {n:153, t:"Preferiría ser artista antes que secretario/a de un club social.", opts:["a","b","c"]},
+  {n:154, t:"¿Cuál de las siguientes palabras es diferente a las otras? a) Zigzag, b) Recto, c) Diagonal", opts:["Zigzag","¿?","Diagonal"]},
+  {n:155, t:"Cuando alguien me hace algo injusto, lo enfrento directamente.", opts:["a","b","c"]},
+  {n:156, t:"Me resulta fácil permanecer tranquilo/a aunque los demás a mi alrededor estén estresados.", opts:["a","b","c"]},
+  {n:157, t:"Cuando me piden que cambie algo que funciona bien, tiendo a resistirme.", opts:["a","b","c"]},
+  {n:158, t:"Soy considerado/a por muchos como un/a buen/a líder.", opts:["a","b","c"]},
+  {n:159, t:"Cuando estoy en un grupo, con frecuencia prefiero observar en vez de participar activamente.", opts:["a","b","c"]},
+  {n:160, t:"Me resulta fácil hablar sobre mis sentimientos con otras personas.", opts:["a","b","c"]},
+  // Block 161-170
+  {n:161, t:"Pocas cosas me alteran o me sacan de mis casillas.", opts:["a","b","c"]},
+  {n:162, t:"Cuando observo algo que me parece importante, insisto en que los demás lo escuchen.", opts:["a","b","c"]},
+  {n:163, t:"Me gusta hacer las cosas siguiendo un método sistemático y ordenado.", opts:["a","b","c"]},
+  {n:164, t:"Cuando alguien me decepciona, lo recuerdo por mucho tiempo.", opts:["a","b","c"]},
+  {n:165, t:"Cuando viajo al extranjero, prefiero planear yo mismo/a el itinerario.", opts:["a","b","c"]},
+  {n:166, t:"Cuando estoy en un grupo, a menudo siento que otros no comprenden bien mis ideas.", opts:["a","b","c"]},
+  {n:167, t:"Acepto fácilmente las costumbres de los lugares nuevos que visito.", opts:["a","b","c"]},
+  {n:168, t:"Aprendo mejor leyendo por mi cuenta que participando en discusiones de grupo.", opts:["a","b","c"]},
+  {n:169, t:"Espero siempre estar seguro/a de mis ideas antes de compartirlas con otros.", opts:["a","b","c"]},
+  {n:170, t:"Las cosas pequeñas que salen mal me molestan más de lo que debería.", opts:["a","b","c"]},
+  // Block 171-180
+  {n:171, t:"Por lo general no digo cosas que después me arrepienta de haber dicho.", opts:["a","b","c"]},
+  {n:172, t:"Cuando trabajo en equipo, me resulta natural asumir el liderazgo.", opts:["a","b","c"]},
+  {n:173, t:"Pronto es a nunca como cerca es a...", opts:["En ningún sitio","¿?","Lejos"]},
+  {n:174, t:"Me resulta difícil actuar de manera contraria a mis principios.", opts:["a","b","c"]},
+  {n:175, t:"Las personas me consideran más bien un/a hombre/mujer de ideas que de acción.", opts:["a","b","c"]},
+  {n:176, t:"Con frecuencia siento que no valgo mucho o que no soy lo suficientemente bueno/a.", opts:["a","b","c"]},
+  {n:177, t:"Creo que tengo mucho autocontrol y dominio de mis emociones.", opts:["a","b","c"]},
+  {n:178, t:"Cuando alguien habla mal de mí, suelo ignorarlo sin que me afecte.", opts:["a","b","c"]},
+  {n:179, t:"Me siento a gusto conversando con personas de ideologías muy diferentes a la mía.", opts:["a","b","c"]},
+  {n:180, t:"En la época de estudiante, prefería las clases de lengua o literatura a las de matemáticas.", opts:["a","b","c"]},
+  // Block 181-187
+  {n:181, t:"Por lo general, cuando me propongo algo, lo logro.", opts:["a","b","c"]},
+  {n:182, t:"Encuentro fascinantes a las personas que son un poco excéntricas o inusuales.", opts:["a","b","c"]},
+  {n:183, t:"Cuando algo me irrita, me contengo y no lo manifiesto.", opts:["a","b","c"]},
+  {n:184, t:"Creo que enseñar a los niños a ser libres e independientes es más importante que enseñarles a cumplir las reglas.", opts:["a","b","c"]},
+  {n:185, t:"Las personas que me conocen bien me describen como alguien firme e inquebrantable.", opts:["a","b","c"]},
+  {n:186, t:"Siempre trato de ser cortés con todos aunque a veces sean antipáticos.", opts:["a","b","c"]},
+  {n:187, t:"Hago mis trabajos siempre de la mejor manera posible.", opts:["a","b","c"]}
+];
+
+const OPT_LABELS = {
+  standard: ["Verdadero", "¿?", "Falso"],
+  agree: ["Sí", "¿?", "No"],
+  default: (q) => {
+    if(q.opts[0]==="a") return ["Verdadero","¿?","Falso"];
+    return q.opts;
+  }
+};
+
+// ============================================================
+// SCORING KEY
+// Format: factor => [[q, a_pts, c_pts], ...]  b always = 1
+// ============================================================
+const SCORING_KEY = {
+  A: [[3,2,0],[21,2,0],[30,2,0],[61,2,0],[71,2,0],[90,2,0],[101,2,0],[103,2,0],[117,2,0],[118,2,0],[138,0,2]],
+  B: [[22,2,0],[40,0,2],[59,2,0],[78,2,0],[97,0,2],[116,2,0],[135,0,2],[154,2,0],[173,2,0]],
+  C: [[4,2,0],[12,2,0],[15,0,2],[38,0,2],[52,0,2],[62,2,0],[66,0,2],[79,2,0],[89,0,2],[156,2,0],[161,2,0]],
+  E: [[14,2,0],[19,2,0],[33,2,0],[45,2,0],[55,2,0],[64,2,0],[82,2,0],[93,2,0],[110,2,0],[119,2,0],[155,2,0]],
+  F: [[35,2,0],[41,2,0],[48,2,0],[58,2,0],[69,2,0],[81,2,0],[112,2,0],[118,2,0],[122,2,0],[143,2,0]],
+  G: [[23,2,0],[27,2,0],[43,2,0],[46,0,2],[53,2,0],[70,2,0],[92,2,0],[94,2,0],[99,2,0],[132,2,0],[163,2,0]],
+  H: [[13,2,0],[28,0,2],[39,2,0],[67,2,0],[76,2,0],[85,0,2],[137,2,0],[143,2,0],[158,2,0],[172,2,0]],
+  I: [[29,2,0],[86,2,0],[100,2,0],[105,2,0],[144,2,0],[152,2,0],[153,2,0],[175,2,0],[180,2,0]],
+  L: [[11,0,2],[26,2,0],[44,0,2],[56,2,0],[72,2,0],[80,0,2],[84,0,2],[115,0,2],[140,2,0],[146,2,0],[164,2,0]],
+  M: [[10,2,0],[50,2,0],[73,2,0],[83,2,0],[88,2,0],[100,2,0],[139,2,0],[153,2,0],[175,2,0]],
+  N: [[16,2,0],[32,2,0],[68,2,0],[95,2,0],[121,2,0],[123,2,0],[162,2,0],[166,2,0]],
+  O: [[51,0,2],[52,2,0],[75,2,0],[77,2,0],[96,2,0],[107,2,0],[128,2,0],[131,2,0],[136,2,0],[151,2,0],[176,2,0]],
+  Q1: [[17,2,0],[54,2,0],[87,2,0],[109,2,0],[150,0,2],[167,2,0],[179,2,0],[182,2,0],[184,2,0]],
+  Q2: [[20,2,0],[63,2,0],[74,2,0],[104,2,0],[124,2,0],[126,2,0],[130,2,0],[149,2,0],[165,2,0],[168,2,0]],
+  Q3: [[24,2,0],[27,2,0],[37,2,0],[85,2,0],[102,2,0],[111,2,0],[129,2,0],[141,0,2],[163,2,0],[169,2,0],[171,2,0],[183,2,0],[185,2,0]],
+  Q4: [[42,2,0],[98,2,0],[113,2,0],[114,0,2],[133,2,0],[145,0,2],[170,2,0]],
+  DM: [[2,2,0],[106,2,0],[174,2,0],[177,2,0],[181,2,0],[186,2,0],[187,2,0]]
+};
+
+// ============================================================
+// NORMATIVE TABLES (from Excel HOMBRE-UNIV and MUJER-UNIV)
+// Index = raw score - 1 (so index 0 = raw score 1)
+// ============================================================
+const NORM_H = {
+  A: [1,1,1,1,2,2,3,4,5,5,5,6,6,7,8,9,9,10,10,10,10,10,10,10,10,10,10],
+  B: [1,1,1,1,2,3,4,5,6,7,8,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  C: [1,1,1,1,1,1,1,1,1,1,1,1,2,3,4,4,5,5,6,6,6,7,7,8,8,9,9],
+  E: [1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,10,10,10,10,10,10],
+  F: [1,1,1,1,1,1,1,2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,10,10,10,10,10],
+  G: [1,1,1,1,1,1,1,1,1,1,2,3,3,4,5,5,6,7,7,8,8,8,8,8,8,8,8],
+  H: [1,1,1,1,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,6,7,7,8,8,9,9],
+  I: [1,1,2,2,3,4,4,5,6,7,7,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  L: [1,1,1,2,2,3,4,4,5,6,6,7,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10],
+  M: [1,1,1,1,1,2,2,3,3,4,5,5,6,6,7,7,8,8,9,10,10,10,10,10,10,10,10],
+  N: [1,1,1,1,1,2,2,3,4,4,5,6,6,7,7,8,9,9,10,10,10,10,10,10,10,10,10],
+  O: [2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10],
+  Q1:[1,1,1,1,2,2,3,4,4,5,6,6,7,7,8,9,9,10,10,10,10,10,10,10,10,10,10],
+  Q2:[1,1,2,2,3,3,4,5,5,6,6,7,7,8,9,9,10,10,10,10,10,10,10,10,10,10,10],
+  Q3:[1,1,1,1,1,1,1,1,1,2,3,3,4,5,5,6,7,8,8,9,9,9,9,9,9,9,9],
+  Q4:[2,3,3,4,4,5,5,6,6,7,7,8,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10]
+};
+const NORM_F = {
+  A: [1,1,1,1,1,1,2,2,3,4,5,5,6,7,7,8,9,9,10,10,10,10,10,10,10,10,10],
+  B: [1,1,1,1,1,3,4,5,6,7,8,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  C: [1,1,1,1,1,1,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,7,7,8,8,9,9],
+  E: [1,1,1,1,1,1,1,2,2,3,4,4,5,6,6,7,8,8,9,10,10,10,10,10,10,10,10],
+  F: [1,1,1,1,1,1,1,2,2,3,3,4,5,5,6,6,7,8,8,9,9,10,10,10,10,10,10],
+  G: [1,1,1,1,1,1,1,1,1,1,2,2,3,4,4,5,6,6,7,8,8,9,10,10,10,10,10],
+  H: [1,1,1,1,1,1,1,1,1,1,2,2,3,3,4,4,5,5,6,6,6,7,7,8,8,9,9],
+  I: [1,1,1,1,1,2,2,3,4,4,5,6,6,7,8,8,9,10,10,10,10,10,10,10,10,10,10],
+  L: [1,1,1,2,3,3,4,5,6,6,7,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  M: [1,1,1,1,1,1,2,2,3,4,4,5,6,6,7,8,8,9,10,10,10,10,10,10,10,10,10],
+  N: [1,1,1,1,1,1,1,2,2,3,4,5,6,7,7,8,9,10,10,10,10,10,10,10,10,10,10],
+  O: [2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  Q1:[1,1,1,1,2,3,3,4,5,5,6,7,8,8,9,10,10,10,10,10,10,10,10,10,10,10,10],
+  Q2:[1,1,2,2,3,4,4,5,6,6,7,8,8,9,10,10,10,10,10,10,10,10,10,10,10,10,10],
+  Q3:[1,1,1,1,1,1,1,1,1,1,2,2,3,4,5,6,7,8,9,10,10,10,10,10,10,10,10],
+  Q4:[2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10]
+};
+
+// Factor metadata
+const FACTOR_META = {
+  A:{label:"Afabilidad",      low:"Reservado, crítico, distante",    high:"Cálido, atento, participativo"},
+  B:{label:"Razonamiento",    low:"Pensamiento concreto",             high:"Pensamiento abstracto, brillante"},
+  C:{label:"Estabilidad",     low:"Reactivo, emocionalmente variable",high:"Emocionalmente estable, maduro"},
+  E:{label:"Dominancia",      low:"Deferente, cooperativo",           high:"Dominante, asertivo, competitivo"},
+  F:{label:"Animación",       low:"Serio, prudente, reflexivo",       high:"Animado, espontáneo, entusiasta"},
+  G:{label:"Atención a normas",low:"Inconformista, flexible",         high:"Orientado a reglas, escrupuloso"},
+  H:{label:"Atrevimiento",    low:"Tímido, amenazado, reservado",     high:"Aventurero, socialmente atrevido"},
+  I:{label:"Sensibilidad",    low:"Objetivo, escéptico, utilitario",  high:"Sensible, estético, intuitivo"},
+  L:{label:"Vigilancia",      low:"Confiado, sin envidia, adaptable", high:"Vigilante, suspicaz, escéptico"},
+  M:{label:"Abstracción",     low:"Práctico, orientado a hechos",     high:"Abstracto, imaginativo, soñador"},
+  N:{label:"Privacidad",      low:"Franco, abierto, espontáneo",      high:"Privado, discreto, calculador"},
+  O:{label:"Aprensión",       low:"Seguro, sereno, complaciente",     high:"Aprensivo, ansioso, autoexigente"},
+  Q1:{label:"Apertura al cambio",low:"Tradicional, apegado a lo conocido",high:"Abierto al cambio, experimental"},
+  Q2:{label:"Autosuficiencia",low:"Orientado al grupo, buen seguidor",high:"Autosuficiente, solitario, independiente"},
+  Q3:{label:"Autocontrol",    low:"Impulsivo, flexible, sin inhibición",high:"Controlado, preciso, disciplinado"},
+  Q4:{label:"Tensión",        low:"Relajado, paciente, sin estrés",   high:"Tenso, impaciente, frustrado"}
+};
+
+const SECOND_ORDER = {
+  QI:{label:"Ansiedad",
+    desc:{low:"Calma y ecuanimidad. Maneja bien el estrés.",avg:"Ansiedad moderada, adaptable.",high:"Ansiedad significativa, puede afectar el rendimiento."},
+    calc: s => 0.3*s.Q4 + 0.3*s.O + 0.2*s.L + 0.2*(10-s.C) + 0.1*(10-s.H)},
+  QII:{label:"Extraversión",
+    desc:{low:"Introversión, prefiere soledad.",avg:"Flexible, adapta su sociabilidad.",high:"Extraversión marcada, disfruta de la interacción social."},
+    calc: s => 0.4*s.A + 0.3*s.F + 0.2*s.H + 0.1*(10-s.Q2)},
+  QIII:{label:"Socialización Controlada",
+    desc:{low:"Independiente, poco convencional.",avg:"Balance entre normas y flexibilidad.",high:"Sociabilizado, respetuoso de normas y convenciones."},
+    calc: s => 0.4*s.G + 0.2*s.Q3 + 0.2*(10-s.M) + 0.1*s.N + 0.1*(10-s.E)},
+  QIV:{label:"Independencia",
+    desc:{low:"Dependiente, busca apoyo.",avg:"Puede ser independiente o dependiente según situación.",high:"Independiente, atrevido, emprendedor."},
+    calc: s => 0.4*s.E + 0.2*s.H + 0.2*s.Q1 + 0.1*s.L + 0.1*(10-s.A)}
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let answers = {};
+let currentPage = 0;
+let userData = {};
+let scores = {};
+const ITEMS_PER_PAGE = 10;
+const TOTAL_PAGES = Math.ceil(QUESTIONS.length / ITEMS_PER_PAGE);
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  const showProg = id === 'sec-questions';
+  document.getElementById('topProgress').style.display = showProg ? 'flex' : 'none';
+}
+
+function validateDataAndNext(){
+  const nombre = document.getElementById('inp-nombre').value.trim();
+  const edad = document.getElementById('inp-edad').value;
+  const sexo = document.getElementById('inp-sexo').value;
+  if(!nombre || !edad || !sexo){
+    document.getElementById('data-error').style.display='block';
+    return;
+  }
+  document.getElementById('data-error').style.display='none';
+  userData = {
+    nombre, edad: parseInt(edad), sexo,
+    civil: document.getElementById('inp-civil').value,
+    fecha: document.getElementById('inp-fecha').value || new Date().toLocaleDateString('es-CO')
+  };
+  showSection('sec-instructions');
+}
+
+function startTest(){
+  currentPage = 0;
+  renderPage();
+  showSection('sec-questions');
+}
+
+// ============================================================
+// QUESTION RENDERING
+// ============================================================
+function getOpts(q){
+  if(Array.isArray(q.opts) && q.opts[0] !== 'a') return q.opts; // custom
+  return ["Verdadero","¿?","Falso"];
+}
+
+function renderPage(){
+  const start = currentPage * ITEMS_PER_PAGE;
+  const end = Math.min(start + ITEMS_PER_PAGE, QUESTIONS.length);
+  const page = QUESTIONS.slice(start, end);
+
+  document.getElementById('qPageLabel').textContent = `Página ${currentPage+1} de ${TOTAL_PAGES}`;
+  document.getElementById('qPageTitle').textContent = `Preguntas ${start+1} – ${end}`;
+  updateProgress();
+
+  const list = document.getElementById('questionsList');
+  list.innerHTML = '';
+  page.forEach(q => {
+    const opts = getOpts(q);
+    const selected = answers[q.n];
+    const div = document.createElement('div');
+    div.className = 'question-item';
+    div.id = `qi-${q.n}`;
+    div.innerHTML = `
+      <div class="q-number">Pregunta ${q.n}</div>
+      <div class="q-text">${q.t}</div>
+      <div class="q-options">
+        <button class="q-opt${selected===0?' selected':''}" onclick="selectAnswer(${q.n},0)">${opts[0]}</button>
+        <button class="q-opt${selected===1?' selected':''}" onclick="selectAnswer(${q.n},1)">${opts[1]}</button>
+        <button class="q-opt${selected===2?' selected':''}" onclick="selectAnswer(${q.n},2)">${opts[2]}</button>
+      </div>`;
+    list.appendChild(div);
+  });
+
+  document.getElementById('btnPrev').style.display = currentPage === 0 ? 'none' : 'flex';
+  document.getElementById('btnNext').textContent = currentPage === TOTAL_PAGES-1 ? 'Ver resultados →' : 'Siguiente →';
+  document.getElementById('qNavInfo').textContent = `Página ${currentPage+1} de ${TOTAL_PAGES}`;
+  document.getElementById('q-error').style.display = 'none';
+}
+
+function selectAnswer(qn, val){
+  answers[qn] = val;
+  const opts = document.querySelectorAll(`#qi-${qn} .q-opt`);
+  opts.forEach((o,i) => o.classList.toggle('selected', i===val));
+  updateProgress();
+}
+
+function updateProgress(){
+  const total = QUESTIONS.length;
+  const done = Object.keys(answers).length;
+  document.getElementById('qCounter').textContent = `${done} / ${total} respondidas`;
+  document.getElementById('progressLabel').textContent = `Pregunta ${done} de ${total}`;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+}
+
+function changePage(dir){
+  const start = currentPage * ITEMS_PER_PAGE;
+  const end = Math.min(start + ITEMS_PER_PAGE, QUESTIONS.length);
+  if(dir === 1){
+    // Check all answered
+    const page = QUESTIONS.slice(start, end);
+    const unanswered = page.filter(q => answers[q.n] === undefined);
+    if(unanswered.length > 0){
+      document.getElementById('q-error').style.display = 'block';
+      unanswered.forEach(q => {
+        const el = document.getElementById(`qi-${q.n}`);
+        if(el){ el.querySelectorAll('.q-opt').forEach(o=>o.classList.add('error-pulse')); }
+      });
+      setTimeout(()=>document.getElementById('q-error').style.display='none', 4000);
+      return;
+    }
+    if(currentPage === TOTAL_PAGES-1){
+      calculateResults();
+      return;
+    }
+    currentPage++;
+  } else {
+    if(currentPage > 0) currentPage--;
+  }
+  renderPage();
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+// SCORING
+// ============================================================
+function calculateRawScores(){
+  const raw = {};
+  Object.keys(SCORING_KEY).forEach(factor => {
+    let total = 0;
+    SCORING_KEY[factor].forEach(([qn, aPts, cPts]) => {
+      const ans = answers[qn];
+      if(ans === 0) total += aPts;
+      else if(ans === 1) total += 1;
+      else if(ans === 2) total += cPts;
+    });
+    raw[factor] = total;
+  });
+  return raw;
+}
+
+function rawToDecatipo(factor, raw, sex){
+  const table = sex === 'M' ? NORM_H : NORM_F;
+  const arr = table[factor];
+  if(!arr) return 5;
+  const idx = Math.max(0, Math.min(raw - 1, arr.length - 1));
+  if(raw === 0) return 1;
+  return arr[idx];
+}
+
+function calculateResults(){
+  showSection('sec-processing');
+  setTimeout(()=>{
+    const raw = calculateRawScores();
+    const dec = {};
+    const factors = ['A','B','C','E','F','G','H','I','L','M','N','O','Q1','Q2','Q3','Q4'];
+    factors.forEach(f => {
+      dec[f] = rawToDecatipo(f, raw[f], userData.sexo);
+    });
+    scores = {raw, dec, dm: raw.DM || 0};
+    renderResults();
+    showSection('sec-results');
+    generateTrainingPlan();
+  }, 1800);
+}
+
+// ============================================================
+// RESULTS RENDERING
+// ============================================================
+function renderResults(){
+  const {dec, dm} = scores;
+  document.getElementById('resName').textContent = userData.nombre;
+  const civilMap = {S:'Soltero/a',C:'Casado/a',D:'Divorciado/a',V:'Viudo/a',U:'Unión libre',NS:''};
+  document.getElementById('resMeta').textContent =
+    `${userData.edad} años · ${userData.sexo==='M'?'Masculino':'Femenino'} · ${civilMap[userData.civil]||''} · ${userData.fecha}`;
+
+  // Distortion banner
+  const bannerEl = document.getElementById('distorsionBanner');
+  let bannerClass='distorsion-ok', bannerText='';
+  if(dm < 4){ bannerClass='distorsion-ok'; bannerText='✅ Respuestas muy sinceras (DM = '+dm+'). Resultados altamente confiables.'; }
+  else if(dm < 7){ bannerClass='distorsion-ok'; bannerText='✅ Respuestas sinceras (DM = '+dm+'). Los resultados son confiables.'; }
+  else if(dm < 11){ bannerClass='distorsion-warn'; bannerText='⚠️ Respuestas con leve distorsión (DM = '+dm+'). Los resultados pueden estar algo influenciados por deseabilidad social.'; }
+  else { bannerClass='distorsion-bad'; bannerText='⛔ Respuestas distorsionadas (DM = '+dm+'). La persona tendió a mostrar una imagen muy positiva de sí misma. Interpretar con cautela.'; }
+  bannerEl.className = 'distorsion-banner '+bannerClass;
+  bannerEl.textContent = bannerText;
+
+  renderCharts(dec);
+  renderFactorCards(dec);
+  renderSecondOrder(dec);
+}
+
+function getBarColor(score){
+  if(score <= 3) return '#60a5fa';
+  if(score <= 4) return '#818cf8';
+  if(score <= 6) return '#f97316';
+  if(score <= 7) return '#fb923c';
+  return '#f97316';
+}
+
+function renderCharts(dec){
+  const factors = ['A','B','C','E','F','G','H','I','L','M','N','O','Q1','Q2','Q3','Q4'];
+  const labels = factors.map(f=>f+' '+FACTOR_META[f].label.split(' ')[0]);
+  const data = factors.map(f=>dec[f]);
+  const colors = data.map(d=>getBarColor(d));
+
+  // Bar chart
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  new Chart(barCtx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{data, backgroundColor:colors, borderRadius:4, borderSkipped:false}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' Decatipo: '+ctx.parsed.y}}},
+      scales:{
+        x:{ticks:{color:'#9ca3af',font:{size:11}},grid:{color:'#1e1e1e'}},
+        y:{min:0,max:10,ticks:{color:'#9ca3af',stepSize:1},grid:{color:'#1e1e1e'}}
+      }
+    }
+  });
+
+  // Radar chart
+  const radarCtx = document.getElementById('radarChart').getContext('2d');
+  new Chart(radarCtx, {
+    type:'radar',
+    data:{
+      labels:factors,
+      datasets:[{
+        label:'Perfil',
+        data,
+        fill:true,
+        backgroundColor:'rgba(249,115,22,0.15)',
+        borderColor:'#f97316',
+        pointBackgroundColor:'#f97316',
+        pointRadius:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{r:{min:0,max:10,ticks:{stepSize:2,color:'#6b7280',backdropColor:'transparent'},grid:{color:'#2a2a2a'},pointLabels:{color:'#9ca3af',font:{size:11}}}}
+    }
+  });
+
+  // Second order bar
+  const soKeys = Object.keys(SECOND_ORDER);
+  const soScores = soKeys.map(k=>{
+    const raw = SECOND_ORDER[k].calc(dec);
+    return Math.min(10,Math.max(1,Math.round(raw)));
+  });
+  const soCtx = document.getElementById('soChart').getContext('2d');
+  new Chart(soCtx, {
+    type:'bar',
+    data:{
+      labels:soKeys.map(k=>k+' '+SECOND_ORDER[k].label),
+      datasets:[{data:soScores, backgroundColor:'#f97316', borderRadius:6, borderSkipped:false}]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{min:0,max:10,ticks:{color:'#9ca3af',stepSize:1},grid:{color:'#1e1e1e'}},
+        y:{ticks:{color:'#9ca3af',font:{size:12}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function getInterpretation(factor, score){
+  const m = FACTOR_META[factor];
+  if(score<=3) return `Decatipo bajo (${score}): ${m.low}.`;
+  if(score===4) return `Tendencia baja (${score}): Cierta tendencia hacia ${m.low.toLowerCase()}.`;
+  if(score<=6) return `Promedio (${score}): Balance entre ambos polos. Flexible según la situación.`;
+  if(score===7) return `Tendencia alta (${score}): Cierta tendencia hacia ${m.high.toLowerCase()}.`;
+  return `Decatipo alto (${score}): ${m.high}.`;
+}
+
+function renderFactorCards(dec){
+  const container = document.getElementById('factorCards');
+  container.innerHTML = '';
+  const factors = ['A','B','C','E','F','G','H','I','L','M','N','O','Q1','Q2','Q3','Q4'];
+  factors.forEach(f=>{
+    const score = dec[f];
+    const pct = score/10*100;
+    const card = document.createElement('div');
+    card.className = 'factor-card';
+    card.innerHTML = `
+      <div class="factor-header">
+        <div><div class="factor-name">Factor ${f}</div><div class="factor-label">${FACTOR_META[f].label}</div></div>
+        <div class="factor-score">${score}</div>
+      </div>
+      <div class="factor-bar"><div class="factor-bar-fill" style="width:${pct}%"></div></div>
+      <div class="factor-desc">${getInterpretation(f,score)}</div>`;
+    container.appendChild(card);
+  });
+}
+
+function renderSecondOrder(dec){
+  const container = document.getElementById('soCards');
+  container.innerHTML = '';
+  Object.entries(SECOND_ORDER).forEach(([key,so])=>{
+    const rawVal = so.calc(dec);
+    const score = Math.min(10,Math.max(1,Math.round(rawVal)));
+    const pct = score/10*100;
+    let level = score<=3?'low':score<=6?'avg':'high';
+    const card = document.createElement('div');
+    card.className = 'so-card';
+    card.innerHTML = `
+      <div class="so-name">${key} — ${so.label}</div>
+      <div class="so-score-row">
+        <div class="so-score">${score}</div>
+        <div class="so-bar"><div class="so-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="so-desc">${so.desc[level]}</div>`;
+    container.appendChild(card);
+  });
+}
+
+// ============================================================
+// TRAINING PLAN (Claude API)
+// ============================================================
+async function generateTrainingPlan(){
+  const {dec, dm} = scores;
+  const factorLines = Object.entries(dec).map(([f,v])=>`${f} (${FACTOR_META[f]?.label||f}): decatipo ${v}`).join('\n');
+  const lowFactors = Object.entries(dec).filter(([f,v])=>v<=4).map(([f,v])=>`${f}-${FACTOR_META[f]?.label||f}(dec ${v})`).join(', ');
+  const highFactors = Object.entries(dec).filter(([f,v])=>v>=7).map(([f,v])=>`${f}-${FACTOR_META[f]?.label||f}(dec ${v})`).join(', ');
+
+  const prompt = `Eres una psicóloga organizacional experta en desarrollo de talento humano. Analiza el siguiente perfil de personalidad 16PF de una persona y genera un plan de formación en habilidades blandas personalizado.
+
+DATOS DE LA PERSONA:
+- Nombre: ${userData.nombre}
+- Edad: ${userData.edad} años
+- Sexo: ${userData.sexo === 'M' ? 'Masculino' : 'Femenino'}
+- Distorsión (DM): ${dm} (${dm<4?'muy sincero':dm<7?'sincero':dm<11?'algo distorsionado':'distorsionado'})
+
+PERFIL 16PF (Decatipos 1-10):
+${factorLines}
+
+Factores con calificación baja (áreas a desarrollar): ${lowFactors||'Ninguno notable'}
+Factores con calificación alta (fortalezas): ${highFactors||'Ninguno notable'}
+
+INSTRUCCIONES PARA EL PLAN:
+1. Genera un análisis narrativo del perfil (máximo 3 párrafos, empezando con el nombre)
+2. Identifica las 3-4 competencias de habilidades blandas más importantes a desarrollar según los factores bajos
+3. Para CADA competencia, diseña una malla formativa con:
+   - Objetivo de aprendizaje
+   - 3-4 subtemas específicos
+   - Tipo de sesión (síncrona o asíncrona) y duración (1 hora semanal)
+   - Un recurso o curso real disponible en internet (Coursera, LinkedIn Learning, YouTube, etc.)
+4. Incluye una sección de "Potenciación de fortalezas" para los factores altos
+5. Termina con un mensaje motivador personalizado
+
+Formato de respuesta: HTML limpio usando solo etiquetas <h3>, <p>, <ul>, <li>, <strong>. Sin <html>, <body>, ni estilos CSS. Responde en español.`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:2000,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const html = data.content?.map(c=>c.text||'').join('') || '<p>No se pudo generar el plan en este momento.</p>';
+    document.getElementById('trainingLoading').style.display='none';
+    const content = document.getElementById('trainingContent');
+    content.innerHTML = html;
+    content.style.display='block';
+  } catch(e){
+    document.getElementById('trainingLoading').innerHTML = '<span style="color:#f87171">⚠️ No se pudo conectar con el servicio de IA. Verifica tu conexión e intenta de nuevo.</span>';
+  }
+}
+
+// Init date
+document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
